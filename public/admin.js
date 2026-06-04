@@ -1,5 +1,6 @@
 const adminTokenInput = document.getElementById('adminToken');
 const loadPendingButton = document.getElementById('loadPendingButton');
+const loadApprovedButton = document.getElementById('loadApprovedButton');
 const loadRankingButton = document.getElementById('loadRankingButton');
 const adminContent = document.getElementById('adminContent');
 const adminMessage = document.getElementById('adminMessage');
@@ -76,6 +77,21 @@ function renderRanking(artworks) {
     .join('');
 }
 
+function renderApproved(artworks) {
+  adminContent.innerHTML = artworks
+    .map((item) => `
+      <div class="admin-card">
+        <h3>${item.title}</h3>
+        <p><strong>Autor:</strong> ${item.author} · <strong>Categoría:</strong> ${item.category}</p>
+        <p>${item.description}</p>
+        <div class="admin-actions">
+          <button onclick="deleteArtwork('${item.id}')">Eliminar</button>
+        </div>
+      </div>
+    `)
+    .join('');
+}
+
 window.deleteArtwork = async (artworkId) => {
   try {
     await fetchAdmin('delete', {
@@ -85,6 +101,7 @@ window.deleteArtwork = async (artworkId) => {
     showMessage('Obra eliminada.');
     loadPending();
     loadRanking();
+    loadApproved();
   } catch (error) {
     showMessage(error.message, 'error');
   }
@@ -121,6 +138,16 @@ async function loadPending() {
     const data = await fetchAdmin('pending');
     renderPending(data);
     showMessage('Pendientes cargadas.');
+  } catch (error) {
+    showMessage(error.message, 'error');
+  }
+}
+
+async function loadApproved() {
+  try {
+    const data = await fetchAdmin('approved');
+    renderApproved(data);
+    showMessage('Obras subidas cargadas.');
   } catch (error) {
     showMessage(error.message, 'error');
   }
@@ -191,4 +218,5 @@ async function uploadArtwork(event) {
 uploadButton.addEventListener('click', uploadArtwork);
 
 loadPendingButton.addEventListener('click', loadPending);
+loadApprovedButton.addEventListener('click', loadApproved);
 loadRankingButton.addEventListener('click', loadRanking);
