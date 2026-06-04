@@ -103,8 +103,11 @@ router.post('/upload', upload.single('image'), async (req, res) => {
 
     uploadStream.end(file.buffer);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'No se pudo procesar la carga.' });
+    console.error('submission upload error', error);
+    res.status(500).json({
+      error: 'No se pudo procesar la carga.',
+      details: process.env.NODE_ENV === 'production' ? undefined : error.message,
+    });
   }
 });
 

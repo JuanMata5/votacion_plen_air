@@ -34,7 +34,7 @@ async function fetchAdmin(path, options = {}) {
   });
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.error || 'Error administrativo');
+    throw new Error(errorData.error || errorData.details || 'Error administrativo');
   }
   return response.json();
 }
@@ -47,8 +47,8 @@ function renderPending(artworks) {
         <p><strong>Autor:</strong> ${item.author} · <strong>Categoría:</strong> ${item.category}</p>
         <p>${item.description}</p>
         <div class="admin-actions">
-          <button onclick="approveArtwork(${item.id})">Aprobar</button>
-          <button onclick="rejectArtwork(${item.id})">Rechazar</button>
+          <button onclick="approveArtwork('${item.id}')">Aprobar</button>
+          <button onclick="rejectArtwork('${item.id}')">Rechazar</button>
         </div>
       </div>
     `)

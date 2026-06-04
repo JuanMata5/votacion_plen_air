@@ -34,7 +34,10 @@ router.get('/pending', async (req, res) => {
     );
   } catch (error) {
     console.error('admin pending error', error);
-    res.status(500).json({ error: 'No se pudo obtener obras pendientes.' });
+    res.status(500).json({
+      error: 'No se pudo obtener obras pendientes.',
+      details: process.env.NODE_ENV === 'production' ? undefined : error.message,
+    });
   }
 });
 
