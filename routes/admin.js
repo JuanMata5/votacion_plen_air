@@ -36,7 +36,7 @@ router.get('/pending', async (req, res) => {
     console.error('admin pending error', error);
     res.status(500).json({
       error: 'No se pudo obtener obras pendientes.',
-      details: process.env.NODE_ENV === 'production' ? undefined : error.message,
+      details: error.message,
     });
   }
 });
@@ -114,11 +114,14 @@ router.post('/upload', upload.single('image'), async (req, res) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { folder: 'convention-artworks', resource_type: 'image' },
         async (error, result) => {
-          if (error) {
-            console.error(error);
-            return res.status(500).json({ error: 'Error al subir la imagen.' });
-          }
-          await saveArtwork(result.secure_url);
+              if (error) {
+          console.error('cloudinary upload error', error);
+          return res.status(500).json({
+            error: 'Error al subir la imagen.',
+            details: error.message,
+          });
+        }
+        await saveArtwork(result.secure_url);
         }
       );
       uploadStream.end(file.buffer);
@@ -126,8 +129,11 @@ router.post('/upload', upload.single('image'), async (req, res) => {
       await saveArtwork(imageUrl);
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'No se pudo procesar la subida de la obra.' });
+    console.error('admin upload error', error);
+    res.status(500).json({
+      error: 'No se pudo procesar la subida de la obra.',
+      details: error.message,
+    });
   }
 });
 

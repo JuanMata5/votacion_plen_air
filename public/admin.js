@@ -40,7 +40,7 @@ async function fetchAdmin(path, options = {}) {
     } catch (parseError) {
       errorText = await response.text();
     }
-    throw new Error(errorText || 'Error administrativo');
+    throw new Error(errorText || `Error administrativo (${response.status})`);
   }
   return response.json();
 }
