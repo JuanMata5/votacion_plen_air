@@ -187,4 +187,25 @@ router.get('/ranking', async (req, res) => {
   }
 });
 
+// Ruta de diagnóstico: intenta crear una obra de prueba y devuelve el error si ocurre
+router.post('/test-create', async (req, res) => {
+  try {
+    const sample = {
+      title: req.body.title || 'TEST-ARTWORK',
+      description: req.body.description || 'Prueba de creación de obra',
+      author: req.body.author || 'Admin Test',
+      category: req.body.category || 'Pintura',
+      imageUrl: req.body.imageUrl || 'https://via.placeholder.com/800x600.png?text=test',
+      status: 'approved',
+      approvedAt: new Date(),
+    };
+
+    const created = await Artwork.create(sample);
+    res.json({ success: true, artworkId: created._id, sample });
+  } catch (error) {
+    console.error('admin test-create error', error);
+    res.status(500).json({ error: 'No se pudo crear la obra de prueba.', details: error.message });
+  }
+});
+
 module.exports = router;
