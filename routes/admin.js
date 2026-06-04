@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const Artwork = require('../models/artwork');
+const mongoose = require('../db');
 const cloudinary = require('../utils/cloudinary');
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -38,6 +39,19 @@ router.get('/pending', async (req, res) => {
       error: 'No se pudo obtener obras pendientes.',
       details: error.message,
     });
+  }
+});
+
+// Ruta que devuelve el estado de conexión a la DB (diagnóstico)
+router.get('/status', (req, res) => {
+  try {
+    const readyState = mongoose.connection.readyState; // 0 disconnected, 1 connected, 2 connecting, 3 disconnecting
+    const rawUri = process.env.MONGODB_URI || null;
+    const masked = rawUri ? `${rawUri.slice(0, 12)}...****` : null;
+    res.json({ success: true, readyState, mongodbUriPresent: !!rawUri, mongodbUriMasked: masked });
+  } catch (error) {
+    console.error('admin status error', error);
+    res.status(500).json({ error: 'No se pudo obtener el estado de la DB', details: error.message });
   }
 });
 
@@ -204,7 +218,8 @@ router.post('/test-create', async (req, res) => {
     res.json({ success: true, artworkId: created._id, sample });
   } catch (error) {
     console.error('admin test-create error', error);
-    res.status(500).json({ error: 'No se pudo crear la obra de prueba.', details: error.message });
+    const readyState = mongoose.connection && mongoose.connection.readyState;
+    res.status(500).json({ error: 'No se pudo crear la obra de prueba.', details: error.message, mongooseState: readyState });
   }
 });
 
