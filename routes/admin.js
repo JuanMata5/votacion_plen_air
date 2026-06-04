@@ -86,6 +86,21 @@ router.post('/reject', requireAdmin, async (req, res) => {
   }
 });
 
+router.post('/delete', requireAdmin, async (req, res) => {
+  const { artworkId } = req.body;
+  if (!artworkId) {
+    return res.status(400).json({ error: 'Falta artworkId.' });
+  }
+
+  try {
+    await Artwork.findByIdAndDelete(artworkId);
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'No se pudo eliminar la obra.' });
+  }
+});
+
 router.post('/upload', requireAdmin, upload.single('image'), async (req, res) => {
   const {
     title,

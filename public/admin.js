@@ -55,6 +55,7 @@ function renderPending(artworks) {
         <div class="admin-actions">
           <button onclick="approveArtwork('${item.id}')">Aprobar</button>
           <button onclick="rejectArtwork('${item.id}')">Rechazar</button>
+          <button onclick="deleteArtwork('${item.id}')">Eliminar</button>
         </div>
       </div>
     `)
@@ -67,10 +68,27 @@ function renderRanking(artworks) {
       <div class="admin-card">
         <h3>${item.title}</h3>
         <p><strong>Autor:</strong> ${item.author} · <strong>Votos:</strong> ${item.votes}</p>
+        <div class="admin-actions">
+          <button onclick="deleteArtwork('${item.id}')">Eliminar</button>
+        </div>
       </div>
     `)
     .join('');
 }
+
+window.deleteArtwork = async (artworkId) => {
+  try {
+    await fetchAdmin('delete', {
+      method: 'POST',
+      body: JSON.stringify({ artworkId }),
+    });
+    showMessage('Obra eliminada.');
+    loadPending();
+    loadRanking();
+  } catch (error) {
+    showMessage(error.message, 'error');
+  }
+};
 
 window.approveArtwork = async (artworkId) => {
   try {
