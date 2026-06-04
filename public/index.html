@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galería de Arte - Convención</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-content">
+      <p class="eyebrow">Convención de Arte</p>
+      <h1>Vota por tu obra favorita</h1>
+      <p>Descubre artistas emergentes, vota sin registrarte y explora el ranking.</p>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="controls-panel">
+      <div class="search-box">
+        <input id="searchInput" type="search" placeholder="Buscar por título o descripción" />
+      </div>
+      <div class="filters">
+        <select id="categoryFilter">
+          <option value="">Todas las categorías</option>
+          <option value="Pintura">Pintura</option>
+          <option value="Ilustración">Ilustración</option>
+          <option value="Fotografía">Fotografía</option>
+          <option value="Escultura">Escultura</option>
+        </select>
+        <input id="artistFilter" type="text" placeholder="Buscar por artista" />
+      </div>
+    </section>
+
+    <section class="gallery-section">
+      <div class="section-header">
+        <h2>Obras Destacadas</h2>
+        <div class="rank-pill" id="rankingButton">Ver ranking</div>
+      </div>
+      <div id="galleryGrid" class="gallery-grid"></div>
+      <p id="emptyMessage" class="empty-message">Cargando obras...</p>
+    </section>
+
+    <section class="submission-section">
+      <div class="section-header">
+        <h2>Envía tu obra</h2>
+        <p>Los artistas pueden enviar su obra con email y verificación.</p>
+      </div>
+      <div class="submission-card">
+        <form id="requestCodeForm" class="submission-form">
+          <label>Tu email</label>
+          <input type="email" id="submitEmail" placeholder="artista@example.com" required />
+          <button type="submit">Solicitar código de verificación</button>
+        </form>
+
+        <form id="verifyCodeForm" class="submission-form hidden">
+          <label>Código de verificación</label>
+          <input type="text" id="verifyCode" placeholder="123456" required />
+          <button type="submit">Verificar código</button>
+        </form>
+
+        <form id="uploadForm" class="submission-form hidden" enctype="multipart/form-data">
+          <label>Título de la obra</label>
+          <input type="text" id="artworkTitle" required />
+
+          <label>Descripción</label>
+          <textarea id="artworkDescription" rows="4" required></textarea>
+
+          <label>Autor</label>
+          <input type="text" id="artworkAuthor" required />
+
+          <label>Categoría</label>
+          <select id="artworkCategory" required>
+            <option value="Pintura">Pintura</option>
+            <option value="Ilustración">Ilustración</option>
+            <option value="Fotografía">Fotografía</option>
+            <option value="Escultura">Escultura</option>
+          </select>
+
+          <label>Imagen</label>
+          <input type="file" id="artworkImage" accept="image/*" required />
+
+          <button type="submit">Enviar obra</button>
+        </form>
+        <div id="submissionMessage" class="form-message"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
