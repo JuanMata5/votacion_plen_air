@@ -34,6 +34,11 @@
   }
 
   async function voteArtwork(artworkId, button) {
+    if (!verifiedEmail) {
+      alert('Guarda tu correo antes de votar.');
+      return;
+    }
+
     button.disabled = true;
     button.textContent = 'Procesando...';
 
@@ -41,7 +46,7 @@
       const response = await fetch(`${apiBase}/api/votes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ artwork_id: artworkId, visitor_id: visitorId }),
+        body: JSON.stringify({ artwork_id: artworkId, visitor_id: visitorId, email: verifiedEmail }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'No se pudo votar.');
@@ -85,7 +90,12 @@
       .art-gallery-embed__button { border: none; border-radius: 18px; padding: 0.95rem 1rem; background: linear-gradient(135deg, #e87916, #ffa640); color: #fff; font-weight: 700; cursor: pointer; }
       .art-gallery-embed__button[disabled] { background: #d9d1c5; cursor: not-allowed; }
       .art-gallery-embed__loading, .art-gallery-embed__error, .art-gallery-embed__empty { color: #7b5a3b; padding: 1rem; text-align: center; }
-      @media (max-width: 540px) { .art-gallery-embed__grid { grid-template-columns: 1fr; } }
+      .art-gallery-embed__email-section { margin-bottom: 1rem; padding: 1rem; border-radius: 20px; background: #fff7ed; border: 1px solid #f3d1b0; }
+      .art-gallery-embed__email-label { margin: 0 0 0.5rem; color: #865320; font-weight: 700; }
+      .art-gallery-embed__email-row { display: grid; grid-template-columns: 1fr auto; gap: 0.75rem; }
+      .art-gallery-embed__email-row input { width: 100%; padding: 0.85rem 1rem; border: 1px solid #d8c4b5; border-radius: 18px; font-size: 0.95rem; }
+      .art-gallery-embed__email-note { margin: 0.75rem 0 0; color: #7b5a3b; font-size: 0.88rem; }
+      @media (max-width: 540px) { .art-gallery-embed__grid { grid-template-columns: 1fr; } .art-gallery-embed__email-row { grid-template-columns: 1fr; } }
     `;
     document.head.appendChild(style);
   }
@@ -110,11 +120,24 @@
             <span>${escapeHtml(artwork.author)}</span>
             <span>${artwork.votes} votos</span>
           </div>
-          <button class="art-gallery-embed__button" data-id="${artwork.id}" ${artwork.voted ? 'disabled' : ''}>
-            ${artwork.voted ? 'Ya votaste' : 'Votar ahora'}
+          <button class="art-gallery-embed__button" data-id="${artwork.id}" ${artwork.voted || !verifiedEmail ? 'disabled' : ''}>
+            ${artwork.voted ? 'Ya votaste' : verifiedEmail ? 'Votar ahora' : 'Guarda tu correo'}
           </button>
         </div>
       </article>
+    `;
+  }
+
+  function renderEmailSection() {
+    return `
+      <div class="art-gallery-embed__email-section">
+        <p class="art-gallery-embed__email-label">Ingresa tu correo para poder votar</p>
+        <div class="art-gallery-embed__email-row">
+          <input id="art-gallery-embed-email" type="email" placeholder="tu@email.com" value="${verifiedEmail || ''}" />
+          <button id="art-gallery-embed-save-email" class="art-gallery-embed__button">${verifiedEmail ? 'Actualizar correo' : 'Guardar correo'}</button>
+        </div>
+        <p class="art-gallery-embed__email-note">El correo solo se usa para validar tu voto y no se muestra públicamente.</p>
+      </div>
     `;
   }
 
@@ -135,13 +158,31 @@
           <h2>Vota por tu obra favorita</h2>
         </div>
       </div>
+      ${renderEmailSection()}
       <div class="art-gallery-embed__grid">
         ${artworks.length ? artworks.map(renderCard).join('') : '<p class="art-gallery-embed__empty">No hay obras disponibles.</p>'}
       </div>
     `;
 
+    const emailInput = root.querySelector('#art-gallery-embed-email');
+    const saveEmailButton = root.querySelector('#art-gallery-embed-save-email');
+    if (saveEmailButton && emailInput) {
+      saveEmailButton.addEventListener('click', async () => {
+        const email = emailInput.value.trim();
+        if (!email) {
+          alert('Ingresa un correo válido para poder votar.');
+          return;
+        }
+        verifiedEmail = email;
+        localStorage.setItem(emailKey, email);
+        await render();
+      });
+    }
+
     root.querySelectorAll('.art-gallery-embed__button').forEach((button) => {
-      button.addEventListener('click', () => voteArtwork(button.dataset.id, button));
+      const artworkId = button.dataset.id;
+      if (!artworkId) return;
+      button.addEventListener('click', () => voteArtwork(artworkId, button));
     });
   }
 
