@@ -14,9 +14,10 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-router.use(requireAdmin);
+// Nota: no aplicamos requireAdmin globalmente para permitir una ruta de diagnóstico pública
+// Aplicaremos `requireAdmin` sólo en las rutas que requieren control.
 
-router.get('/pending', async (req, res) => {
+router.get('/pending', requireAdmin, async (req, res) => {
   try {
     const artworks = await Artwork.find({ status: 'pending' }).sort({ createdAt: -1 });
 
@@ -55,7 +56,7 @@ router.get('/status', (req, res) => {
   }
 });
 
-router.post('/approve', async (req, res) => {
+router.post('/approve', requireAdmin, async (req, res) => {
   const { artworkId } = req.body;
   if (!artworkId) {
     return res.status(400).json({ error: 'Falta artworkId.' });
@@ -70,7 +71,7 @@ router.post('/approve', async (req, res) => {
   }
 });
 
-router.post('/reject', async (req, res) => {
+router.post('/reject', requireAdmin, async (req, res) => {
   const { artworkId } = req.body;
   if (!artworkId) {
     return res.status(400).json({ error: 'Falta artworkId.' });
@@ -85,7 +86,7 @@ router.post('/reject', async (req, res) => {
   }
 });
 
-router.post('/upload', upload.single('image'), async (req, res) => {
+router.post('/upload', requireAdmin, upload.single('image'), async (req, res) => {
   const {
     title,
     description,
@@ -160,7 +161,7 @@ router.post('/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-router.get('/ranking', async (req, res) => {
+router.get('/ranking', requireAdmin, async (req, res) => {
   try {
     const artworks = await Artwork.aggregate([
       { $match: { status: 'approved' } },
@@ -202,7 +203,7 @@ router.get('/ranking', async (req, res) => {
 });
 
 // Ruta de diagnóstico: intenta crear una obra de prueba y devuelve el error si ocurre
-router.post('/test-create', async (req, res) => {
+router.post('/test-create', requireAdmin, async (req, res) => {
   try {
     const sample = {
       title: req.body.title || 'TEST-ARTWORK',
