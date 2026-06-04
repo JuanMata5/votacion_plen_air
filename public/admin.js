@@ -3,6 +3,16 @@ const loadPendingButton = document.getElementById('loadPendingButton');
 const loadRankingButton = document.getElementById('loadRankingButton');
 const adminContent = document.getElementById('adminContent');
 const adminMessage = document.getElementById('adminMessage');
+const uploadTitle = document.getElementById('uploadTitle');
+const uploadFirstName = document.getElementById('uploadFirstName');
+const uploadLastName = document.getElementById('uploadLastName');
+const uploadCategory = document.getElementById('uploadCategory');
+const uploadYear = document.getElementById('uploadYear');
+const uploadMedium = document.getElementById('uploadMedium');
+const uploadDescription = document.getElementById('uploadDescription');
+const uploadImageUrl = document.getElementById('uploadImageUrl');
+const uploadFile = document.getElementById('uploadFile');
+const uploadButton = document.getElementById('uploadButton');
 
 function showMessage(message, type = 'info') {
   adminMessage.textContent = message;
@@ -101,6 +111,60 @@ async function loadRanking() {
     showMessage(error.message, 'error');
   }
 }
+
+async function uploadArtwork(event) {
+  event.preventDefault();
+  const token = adminTokenInput.value.trim();
+  if (!token) {
+    showMessage('Ingresa el token administrativo para subir la obra.', 'error');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('title', uploadTitle.value.trim());
+  formData.append('authorFirstName', uploadFirstName.value.trim());
+  formData.append('authorLastName', uploadLastName.value.trim());
+  formData.append('category', uploadCategory.value.trim());
+  formData.append('year', uploadYear.value.trim());
+  formData.append('medium', uploadMedium.value.trim());
+  formData.append('description', uploadDescription.value.trim());
+  if (uploadImageUrl.value.trim()) {
+    formData.append('imageUrl', uploadImageUrl.value.trim());
+  }
+  if (uploadFile.files.length > 0) {
+    formData.append('image', uploadFile.files[0]);
+  }
+
+  try {
+    const response = await fetch('/api/admin/upload', {
+      method: 'POST',
+      headers: {
+        'x-admin-token': token,
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'No se pudo subir la obra.');
+    }
+
+    showMessage(data.message || 'Obra subida correctamente.');
+    uploadTitle.value = '';
+    uploadFirstName.value = '';
+    uploadLastName.value = '';
+    uploadCategory.value = '';
+    uploadYear.value = '';
+    uploadMedium.value = '';
+    uploadDescription.value = '';
+    uploadImageUrl.value = '';
+    uploadFile.value = '';
+  } catch (error) {
+    showMessage(error.message, 'error');
+  }
+}
+
+uploadButton.addEventListener('click', uploadArtwork);
 
 loadPendingButton.addEventListener('click', loadPending);
 loadRankingButton.addEventListener('click', loadRanking);

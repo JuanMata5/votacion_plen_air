@@ -1,6 +1,9 @@
 const express = require('express');
+const multer = require('multer');
 const Artwork = require('../models/artwork');
+const cloudinary = require('../utils/cloudinary');
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 function requireAdmin(req, res, next) {
   const token = req.headers['x-admin-token'];
@@ -82,6 +85,66 @@ router.post('/reject', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'No se pudo rechazar la obra.' });
+  }
+});
+
+router.post('/upload', upload.single('image'), async (req, res) => {
+  const {
+    title,
+    description,
+    category,
+    authorFirstName,
+    authorLastName,
+    year,
+    medium,
+    imageUrl,
+  } = req.body;
+  const file = req.file;
+
+  if (!title || !description || !category || !authorFirstName || !authorLastName) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios para la obra.' });
+  }
+
+  if (!file && !imageUrl) {
+    return res.status(400).json({ error: 'Debes subir una imagen o proporcionar una URL de imagen.' });
+  }
+
+  try {
+    const saveArtwork = async (finalImageUrl) => {
+      await Artwork.create({
+        title,
+        description,
+        author: `${authorFirstName} ${authorLastName}`,
+        authorFirstName,
+        authorLastName,
+        category,
+        year,
+        medium,
+        imageUrl: finalImageUrl,
+        status: 'approved',
+        approvedAt: new Date(),
+      });
+      res.json({ success: true, message: 'Obra subida y aprobada.' });
+    };
+
+    if (file) {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: 'convention-artworks', resource_type: 'image' },
+        async (error, result) => {
+          if (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'Error al subir la imagen.' });
+          }
+          await saveArtwork(result.secure_url);
+        }
+      );
+      uploadStream.end(file.buffer);
+    } else {
+      await saveArtwork(imageUrl);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'No se pudo procesar la subida de la obra.' });
   }
 });
 

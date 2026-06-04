@@ -20,6 +20,22 @@
       <button id="loadRankingButton">Ver ranking</button>
     </section>
 
+    <section class="admin-upload">
+      <h2>Subir obra como administrador</h2>
+      <div class="submission-form" id="adminUploadForm">
+        <input id="uploadTitle" type="text" placeholder="Título de la obra" />
+        <input id="uploadFirstName" type="text" placeholder="Nombre del autor" />
+        <input id="uploadLastName" type="text" placeholder="Apellido del autor" />
+        <input id="uploadCategory" type="text" placeholder="Categoría" />
+        <input id="uploadYear" type="text" placeholder="Año (opcional)" />
+        <input id="uploadMedium" type="text" placeholder="Técnica o medio (opcional)" />
+        <textarea id="uploadDescription" rows="4" placeholder="Descripción de la obra"></textarea>
+        <input id="uploadImageUrl" type="url" placeholder="URL de imagen (opcional si subes archivo)" />
+        <input id="uploadFile" type="file" accept="image/*" />
+        <button id="uploadButton">Subir obra</button>
+      </div>
+    </section>
+
     <section id="adminContent" class="admin-content"></section>
     <div id="adminMessage" class="form-message"></div>
   </div>

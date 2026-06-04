@@ -36,6 +36,7 @@ Proyecto completo para una galería de arte con votación y panel administrativo
 5. Abre `http://localhost:4000` para la galería.
 6. Abre `http://localhost:4000/embed-demo.html` para ver un demo del widget embebido.
 7. Abre `http://localhost:4000/admin.html` para el panel administrativo.
+   - Ingresa tu token administrativo en el campo y usa el formulario de carga para subir obras con nombre, apellido, categoría, descripción y foto.
 8. Si no hay obras disponibles, ejecuta el seed para datos de prueba:
    ```bash
    node scripts/seed-artworks.js
