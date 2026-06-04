@@ -18,6 +18,10 @@ if (!visitorId) {
   localStorage.setItem(STORAGE_KEY, visitorId);
 }
 
+if (verifiedEmail) {
+  voteEmailInput.value = verifiedEmail;
+}
+
 function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
