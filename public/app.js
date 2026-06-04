@@ -31,6 +31,10 @@ function generateUUID() {
 }
 
 async function fetchArtworks() {
+  if (!galleryGrid || !emptyMessage || !searchInput || !categoryFilter || !artistFilter) {
+    return;
+  }
+
   const params = new URLSearchParams();
   const category = categoryFilter.value;
   const search = searchInput.value.trim();
@@ -52,6 +56,10 @@ async function fetchArtworks() {
 }
 
 function renderGallery(artworks) {
+  if (!galleryGrid || !emptyMessage) {
+    return;
+  }
+
   if (!artworks.length) {
     galleryGrid.innerHTML = '';
     emptyMessage.textContent = 'No hay obras para mostrar con esos filtros.';
@@ -143,6 +151,10 @@ function debounce(fn, ms) {
 }
 
 function updateEmailSavedMessage() {
+  if (!emailSavedMessage) {
+    return;
+  }
+
   if (verifiedEmail) {
     emailSavedMessage.textContent = `Correo guardado: ${verifiedEmail}`;
     emailSavedMessage.style.color = '#3b2a20';
