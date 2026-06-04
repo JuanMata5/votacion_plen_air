@@ -17,27 +17,7 @@ router.use(requireAdmin);
 
 router.get('/pending', async (req, res) => {
   try {
-    const artworks = await Artwork.aggregate([
-      { $match: { status: 'pending' } },
-      {
-        $lookup: {
-          from: 'votes',
-          let: { artworkId: '$_id' },
-          pipeline: [
-            { $match: { $expr: { $eq: ['$artworkId', '$$artworkId'] } } },
-            { $count: 'count' },
-          ],
-          as: 'voteCount',
-        },
-      },
-      {
-        $addFields: {
-          votes: { $ifNull: [{ $arrayElemAt: ['$voteCount.count', 0] }, 0] },
-        },
-      },
-      { $project: { voteCount: 0 } },
-      { $sort: { createdAt: -1 } },
-    ]);
+    const artworks = await Artwork.find({ status: 'pending' }).sort({ createdAt: -1 });
 
     res.json(
       artworks.map((artwork) => ({
@@ -48,12 +28,12 @@ router.get('/pending', async (req, res) => {
         category: artwork.category,
         image_url: artwork.imageUrl,
         status: artwork.status,
-        votes: artwork.votes,
+        votes: 0,
         created_at: artwork.createdAt,
       }))
     );
   } catch (error) {
-    console.error(error);
+    console.error('admin pending error', error);
     res.status(500).json({ error: 'No se pudo obtener obras pendientes.' });
   }
 });
