@@ -33,8 +33,14 @@ async function fetchAdmin(path, options = {}) {
     ...options,
   });
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || errorData.details || 'Error administrativo');
+    let errorText;
+    try {
+      const errorData = await response.json();
+      errorText = errorData.error || errorData.details || JSON.stringify(errorData);
+    } catch (parseError) {
+      errorText = await response.text();
+    }
+    throw new Error(errorText || 'Error administrativo');
   }
   return response.json();
 }
