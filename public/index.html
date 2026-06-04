@@ -16,6 +16,21 @@
   </header>
 
   <main class="layout">
+    <section class="submission-section top">
+      <div class="section-header">
+        <h2>Correo para votar</h2>
+        <p>Registra tu email para poder votar, pero las obras siempre aparecen a continuación.</p>
+      </div>
+      <div class="submission-card">
+        <form id="voteEmailForm" class="submission-form">
+          <label>Tu correo</label>
+          <input type="email" id="voteEmail" placeholder="tu@email.com" required />
+          <button type="submit">Guardar correo</button>
+        </form>
+        <div id="emailSavedMessage" class="form-message"></div>
+      </div>
+    </section>
+
     <section class="controls-panel">
       <div class="search-box">
         <input id="searchInput" type="search" placeholder="Buscar por título o descripción" />
@@ -32,19 +47,13 @@
       </div>
     </section>
 
-    <section class="submission-section">
-      <div class="section-header">
-        <h2>Correo para votar</h2>
-        <p>Debes ingresar tu email antes de poder votar por las obras.</p>
+    <section class="gallery-section">
+      <div class="gallery-header">
+        <h2>Obras disponibles</h2>
+        <button id="rankingButton" class="primary-button">Ver ranking</button>
       </div>
-      <div class="submission-card">
-        <form id="voteEmailForm" class="submission-form">
-          <label>Tu correo</label>
-          <input type="email" id="voteEmail" placeholder="tu@email.com" required />
-          <button type="submit">Guardar correo</button>
-        </form>
-        <div id="emailSavedMessage" class="form-message"></div>
-      </div>
+      <div id="galleryGrid" class="gallery-grid"></div>
+      <p id="emptyMessage" class="empty-message">Cargando obras...</p>
     </section>
   </main>
 
