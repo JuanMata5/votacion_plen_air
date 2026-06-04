@@ -42,6 +42,8 @@ Proyecto completo para una galería de arte con votación y panel administrativo
    node scripts/seed-artworks.js
    ```
 
+> Si despliegas en Vercel, ahora hay un `vercel.json` y un `api/index.js` para que el backend Express funcione como función de servidor. Asegúrate de configurar las variables de entorno: `MONGODB_URI`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `ADMIN_TOKEN`, y `NO_EMAIL_MODE=true` si no usas SMTP.
+
 ## Widget embebido
 
 Puedes embeber la galería en otra página con este código:
