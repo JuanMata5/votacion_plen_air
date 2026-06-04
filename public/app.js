@@ -18,7 +18,7 @@ if (!visitorId) {
   localStorage.setItem(STORAGE_KEY, visitorId);
 }
 
-if (verifiedEmail) {
+if (verifiedEmail && voteEmailInput) {
   voteEmailInput.value = verifiedEmail;
 }
 
@@ -122,15 +122,17 @@ async function handleVote(event) {
   }
 }
 
-searchInput.addEventListener('input', debounce(fetchArtworks, 300));
-categoryFilter.addEventListener('change', fetchArtworks);
-artistFilter.addEventListener('input', debounce(fetchArtworks, 300));
-rankingButton.addEventListener('click', () => {
-  categoryFilter.value = '';
-  artistFilter.value = '';
-  searchInput.value = '';
-  fetchArtworks();
-});
+if (searchInput && categoryFilter && artistFilter && rankingButton) {
+  searchInput.addEventListener('input', debounce(fetchArtworks, 300));
+  categoryFilter.addEventListener('change', fetchArtworks);
+  artistFilter.addEventListener('input', debounce(fetchArtworks, 300));
+  rankingButton.addEventListener('click', () => {
+    categoryFilter.value = '';
+    artistFilter.value = '';
+    searchInput.value = '';
+    fetchArtworks();
+  });
+}
 
 function debounce(fn, ms) {
   let timer;
@@ -150,9 +152,10 @@ function updateEmailSavedMessage() {
   }
 }
 
-voteEmailForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const email = voteEmailInput.value.trim();
+if (voteEmailForm && voteEmailInput) {
+  voteEmailForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const email = voteEmailInput.value.trim();
 
   try {
     const response = await fetch('/api/voters', {
@@ -168,11 +171,18 @@ voteEmailForm.addEventListener('submit', async (event) => {
     voteEmailInput.value = '';
     updateEmailSavedMessage();
     await fetchArtworks();
-  } catch (error) {
-    emailSavedMessage.textContent = error.message;
-    emailSavedMessage.style.color = '#a33';
-  }
-});
+    } catch (error) {
+      if (emailSavedMessage) {
+        emailSavedMessage.textContent = error.message;
+        emailSavedMessage.style.color = '#a33';
+      }
+    }
+  });
+}
 
-updateEmailSavedMessage();
-fetchArtworks();
+if (emailSavedMessage) {
+  updateEmailSavedMessage();
+}
+if (galleryGrid) {
+  fetchArtworks();
+}
