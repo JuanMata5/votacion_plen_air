@@ -114,14 +114,23 @@ router.post('/upload', upload.single('image'), async (req, res) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { folder: 'convention-artworks', resource_type: 'image' },
         async (error, result) => {
-              if (error) {
-          console.error('cloudinary upload error', error);
-          return res.status(500).json({
-            error: 'Error al subir la imagen.',
-            details: error.message,
-          });
-        }
-        await saveArtwork(result.secure_url);
+          if (error) {
+            console.error('cloudinary upload error', error);
+            return res.status(500).json({
+              error: 'Error al subir la imagen.',
+              details: error.message,
+            });
+          }
+
+          try {
+            await saveArtwork(result.secure_url);
+          } catch (callbackError) {
+            console.error('saveArtwork callback error', callbackError);
+            res.status(500).json({
+              error: 'No se pudo guardar la obra después de subir la imagen.',
+              details: callbackError.message,
+            });
+          }
         }
       );
       uploadStream.end(file.buffer);
