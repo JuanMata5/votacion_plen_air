@@ -217,6 +217,48 @@ router.get('/ranking', requireAdmin, async (req, res) => {
   }
 });
 
+router.get('/approved', requireAdmin, async (req, res) => {
+  try {
+    const artworks = await Artwork.find({ status: 'approved' }).sort({ createdAt: -1 });
+    res.json(
+      artworks.map((artwork) => ({
+        id: artwork._id,
+        title: artwork.title,
+        description: artwork.description,
+        author: artwork.author,
+        category: artwork.category,
+        image_url: artwork.imageUrl,
+        status: artwork.status,
+        created_at: artwork.createdAt,
+      }))
+    );
+  } catch (error) {
+    console.error('admin approved error', error);
+    res.status(500).json({ error: 'No se pudo obtener las obras subidas.' });
+  }
+});
+
+router.get('/all', requireAdmin, async (req, res) => {
+  try {
+    const artworks = await Artwork.find({}).sort({ createdAt: -1 });
+    res.json(
+      artworks.map((artwork) => ({
+        id: artwork._id,
+        title: artwork.title,
+        description: artwork.description,
+        author: artwork.author,
+        category: artwork.category,
+        image_url: artwork.imageUrl,
+        status: artwork.status,
+        created_at: artwork.createdAt,
+      }))
+    );
+  } catch (error) {
+    console.error('admin all error', error);
+    res.status(500).json({ error: 'No se pudo obtener todas las obras.' });
+  }
+});
+
 // Ruta de diagnóstico: intenta crear una obra de prueba y devuelve el error si ocurre
 router.post('/test-create', requireAdmin, async (req, res) => {
   try {

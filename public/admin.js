@@ -1,6 +1,7 @@
 const adminTokenInput = document.getElementById('adminToken');
 const loadPendingButton = document.getElementById('loadPendingButton');
 const loadApprovedButton = document.getElementById('loadApprovedButton');
+const loadAllButton = document.getElementById('loadAllButton');
 const loadRankingButton = document.getElementById('loadRankingButton');
 const adminContent = document.getElementById('adminContent');
 const adminMessage = document.getElementById('adminMessage');
@@ -153,6 +154,16 @@ async function loadApproved() {
   }
 }
 
+async function loadAllArtworks() {
+  try {
+    const data = await fetchAdmin('all');
+    renderApproved(data);
+    showMessage('Todas las obras cargadas.');
+  } catch (error) {
+    showMessage(error.message, 'error');
+  }
+}
+
 async function loadRanking() {
   try {
     const data = await fetchAdmin('ranking');
@@ -219,4 +230,5 @@ uploadButton.addEventListener('click', uploadArtwork);
 
 loadPendingButton.addEventListener('click', loadPending);
 loadApprovedButton.addEventListener('click', loadApproved);
+loadAllButton.addEventListener('click', loadAllArtworks);
 loadRankingButton.addEventListener('click', loadRanking);
