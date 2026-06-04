@@ -4,10 +4,10 @@ const Vote = require('../models/vote');
 const router = express.Router();
 
 router.post('/', async (req, res) => {
-  const { artwork_id, visitor_id } = req.body;
+  const { artwork_id, visitor_id, email } = req.body;
 
-  if (!artwork_id || !visitor_id) {
-    return res.status(400).json({ error: 'Faltan artwork_id o visitor_id.' });
+  if (!artwork_id || !visitor_id || !email) {
+    return res.status(400).json({ error: 'Faltan artwork_id, visitor_id o email.' });
   }
 
   try {
@@ -16,7 +16,7 @@ router.post('/', async (req, res) => {
       return res.status(404).json({ error: 'Obra no disponible para votar.' });
     }
 
-    const vote = new Vote({ artworkId: artwork_id, visitorId: visitor_id });
+    const vote = new Vote({ artworkId: artwork_id, visitorId: visitor_id, email: email.toLowerCase().trim() });
     await vote.save();
 
     res.json({ success: true, voteId: vote._id });

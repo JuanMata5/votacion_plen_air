@@ -4,23 +4,14 @@ const searchInput = document.getElementById('searchInput');
 const categoryFilter = document.getElementById('categoryFilter');
 const artistFilter = document.getElementById('artistFilter');
 const rankingButton = document.getElementById('rankingButton');
-const requestCodeForm = document.getElementById('requestCodeForm');
-const verifyCodeForm = document.getElementById('verifyCodeForm');
-const uploadForm = document.getElementById('uploadForm');
-const submitEmail = document.getElementById('submitEmail');
-const verifyCode = document.getElementById('verifyCode');
-const artworkTitle = document.getElementById('artworkTitle');
-const artworkDescription = document.getElementById('artworkDescription');
-const artworkAuthor = document.getElementById('artworkAuthor');
-const artworkCategory = document.getElementById('artworkCategory');
-const artworkImage = document.getElementById('artworkImage');
-const submissionMessage = document.getElementById('submissionMessage');
+const voteEmailForm = document.getElementById('voteEmailForm');
+const voteEmailInput = document.getElementById('voteEmail');
+const emailSavedMessage = document.getElementById('emailSavedMessage');
 
 const STORAGE_KEY = 'art_gallery_visitor_id';
-const STORAGE_EMAIL = 'art_gallery_submission_email';
+const STORAGE_EMAIL = 'art_gallery_vote_email';
 let visitorId = localStorage.getItem(STORAGE_KEY);
-let verifiedEmail = null;
-let verifiedCode = null;
+let verifiedEmail = localStorage.getItem(STORAGE_EMAIL);
 
 if (!visitorId) {
   visitorId = crypto.randomUUID?.() || generateUUID();
@@ -65,7 +56,10 @@ function renderGallery(artworks) {
 
   emptyMessage.textContent = '';
   galleryGrid.innerHTML = artworks
-    .map((artwork) => `
+    .map((artwork) => {
+      const disabled = artwork.voted || !verifiedEmail;
+      const label = artwork.voted ? 'Ya votaste' : verifiedEmail ? 'Votar ahora' : 'Guarda tu correo para votar';
+      return `
       <article class="card">
         <img src="${artwork.image_url}" alt="${artwork.title}" />
         <div class="card-body">
@@ -76,12 +70,13 @@ function renderGallery(artworks) {
             <span>By ${artwork.author}</span>
             <span>${artwork.votes} votos</span>
           </div>
-          <button class="vote-button" ${artwork.voted ? 'disabled' : ''} data-id="${artwork.id}">
-            ${artwork.voted ? 'Ya votaste' : 'Votar ahora'}
+          <button class="vote-button" ${disabled ? 'disabled' : ''} data-id="${artwork.id}">
+            ${label}
           </button>
         </div>
       </article>
-    `)
+    `;
+    })
     .join('');
 
   document.querySelectorAll('.vote-button').forEach((button) => {
@@ -92,6 +87,12 @@ function renderGallery(artworks) {
 async function handleVote(event) {
   const button = event.currentTarget;
   const artworkId = button.dataset.id;
+
+  if (!verifiedEmail) {
+    alert('Guarda tu correo antes de votar.');
+    return;
+  }
+
   button.disabled = true;
   button.textContent = 'Procesando...';
 
@@ -99,7 +100,7 @@ async function handleVote(event) {
     const response = await fetch('/api/votes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ artwork_id: artworkId, visitor_id: visitorId }),
+      body: JSON.stringify({ artwork_id: artworkId, visitor_id: visitorId, email: verifiedEmail }),
     });
 
     if (!response.ok) {
@@ -112,7 +113,7 @@ async function handleVote(event) {
     await fetchArtworks();
   } catch (error) {
     button.disabled = false;
-    button.textContent = 'Votar ahora';
+    button.textContent = verifiedEmail ? 'Votar ahora' : 'Guarda tu correo para votar';
     alert(error.message);
   }
 }
@@ -135,84 +136,39 @@ function debounce(fn, ms) {
   };
 }
 
-requestCodeForm.addEventListener('submit', async (event) => {
+function updateEmailSavedMessage() {
+  if (verifiedEmail) {
+    emailSavedMessage.textContent = `Correo guardado: ${verifiedEmail}`;
+    emailSavedMessage.style.color = '#3b2a20';
+  } else {
+    emailSavedMessage.textContent = 'Debes guardar tu correo antes de votar.';
+    emailSavedMessage.style.color = '#7b5a3b';
+  }
+}
+
+voteEmailForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const email = submitEmail.value.trim();
+  const email = voteEmailInput.value.trim();
 
   try {
-    const response = await fetch('/api/submissions/request-code', {
+    const response = await fetch('/api/voters', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ visitorId, email }),
     });
     const result = await response.json();
-
-    if (!response.ok) throw new Error(result.error || 'No se pudo enviar el código.');
+    if (!response.ok) throw new Error(result.error || 'No se pudo guardar el correo.');
 
     verifiedEmail = email;
     localStorage.setItem(STORAGE_EMAIL, email);
-    submissionMessage.textContent = result.message;
-    if (result.code) {
-      submissionMessage.innerHTML += `<br><strong>Código:</strong> ${result.code}`;
-    }
-    verifyCodeForm.classList.remove('hidden');
+    voteEmailInput.value = '';
+    updateEmailSavedMessage();
+    await fetchArtworks();
   } catch (error) {
-    submissionMessage.textContent = error.message;
-    submissionMessage.style.color = '#a33';
+    emailSavedMessage.textContent = error.message;
+    emailSavedMessage.style.color = '#a33';
   }
 });
 
-verifyCodeForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const code = verifyCode.value.trim();
-  const email = localStorage.getItem(STORAGE_EMAIL);
-
-  try {
-    const response = await fetch('/api/submissions/verify-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code }),
-    });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'No se pudo verificar el código.');
-
-    verifiedCode = code;
-    submissionMessage.textContent = result.message;
-    uploadForm.classList.remove('hidden');
-  } catch (error) {
-    submissionMessage.textContent = error.message;
-    submissionMessage.style.color = '#a33';
-  }
-});
-
-uploadForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const email = localStorage.getItem(STORAGE_EMAIL);
-  const formData = new FormData();
-
-  formData.append('title', artworkTitle.value.trim());
-  formData.append('description', artworkDescription.value.trim());
-  formData.append('author', artworkAuthor.value.trim());
-  formData.append('category', artworkCategory.value);
-  formData.append('email', email);
-  formData.append('code', verifiedCode);
-  formData.append('image', artworkImage.files[0]);
-
-  try {
-    const response = await fetch('/api/submissions/upload', {
-      method: 'POST',
-      body: formData,
-    });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'No se pudo subir la obra.');
-
-    submissionMessage.textContent = result.message;
-    uploadForm.reset();
-    artworkCategory.value = 'Pintura';
-  } catch (error) {
-    submissionMessage.textContent = error.message;
-    submissionMessage.style.color = '#a33';
-  }
-});
-
+updateEmailSavedMessage();
 fetchArtworks();
