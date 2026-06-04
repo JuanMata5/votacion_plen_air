@@ -1,6 +1,6 @@
 (function () {
   const scriptTag = document.currentScript || document.querySelector('script[src*="embed.js"]');
-  const apiBase = scriptTag?.dataset.apiBase || window.ArtGalleryEmbedConfig?.apiBase || '';
+  const apiBase = scriptTag?.dataset.apiBase || window.ArtGalleryEmbedConfig?.apiBase || window.location.origin;
   const containerId = scriptTag?.dataset.container || window.ArtGalleryEmbedConfig?.container || 'art-gallery-embed';
   const showSubmission = scriptTag?.dataset.showSubmission === 'true' || window.ArtGalleryEmbedConfig?.showSubmission;
   const visitorKey = 'art_gallery_embed_visitor_id';
@@ -58,7 +58,8 @@
     if (!container) {
       container = document.createElement('div');
       container.id = id;
-      document.body.appendChild(container);
+      const parent = document.body || document.head?.parentNode || document.documentElement;
+      parent.appendChild(container);
     }
     container.classList.add('art-gallery-embed');
     return container;
@@ -146,8 +147,17 @@
 
   async function start() {
     root.innerHTML = '<div class="art-gallery-embed__loading">Cargando galería...</div>';
-    await render();
+    try {
+      await render();
+    } catch (error) {
+      root.innerHTML = `<div class="art-gallery-embed__error">Error al iniciar el widget: ${escapeHtml(error.message)}</div>`;
+      console.error('ArtGalleryEmbed startup error:', error);
+    }
   }
 
-  start();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
 })();

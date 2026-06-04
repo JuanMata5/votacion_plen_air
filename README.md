@@ -49,6 +49,14 @@ Puedes embeber la galería en otra página con este código:
 - `data-api-base`: la URL base de tu servidor Express.
 - `data-container`: el `id` del elemento donde se mostrará el widget.
 
+Si prefieres usar un `iframe`, crea un HTML de iframe en tu app y carga esa página desde tu otra web:
+
+```html
+<iframe src="https://tu-dominio.com/iframe.html" width="100%" height="900" frameborder="0" scrolling="no"></iframe>
+```
+
+Esto es útil cuando el editor de la otra web no permite scripts directos.
+
 ## Endpoints principales
 
 - `GET /api/artworks`
