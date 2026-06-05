@@ -55,6 +55,34 @@
       <div id="galleryGrid" class="gallery-grid"></div>
       <p id="emptyMessage" class="empty-message">Cargando obras...</p>
     </section>
+
+    <section class="submission-section">
+      <div class="section-header">
+        <h2>Enviar obra</h2>
+        <p>Artistas pueden enviar su obra aquí. Las obras quedan en revisión y deben ser aprobadas por el administrador antes de aparecer.</p>
+      </div>
+      <div class="submission-card">
+        <form id="submissionEmailForm" class="submission-form">
+          <label>Correo del artista</label>
+          <input type="email" id="submissionEmail" placeholder="artista@email.com" required />
+          <button type="button" id="requestCodeButton">Solicitar código</button>
+        </form>
+        <form id="submissionVerifyForm" class="submission-form hidden">
+          <label>Código de verificación</label>
+          <input type="text" id="submissionCode" placeholder="Ingresa el código" />
+          <button type="button" id="verifyCodeButton">Verificar código</button>
+        </form>
+        <form id="submissionForm" class="submission-form hidden">
+          <input type="text" id="submissionTitle" placeholder="Título de la obra" required />
+          <input type="text" id="submissionAuthor" placeholder="Autor / grupo" required />
+          <input type="text" id="submissionCategory" placeholder="Categoría" required />
+          <textarea id="submissionDescription" rows="4" placeholder="Descripción de la obra" required></textarea>
+          <input type="file" id="submissionImage" accept="image/*" required />
+          <button type="button" id="submitArtworkButton" disabled>Enviar obra</button>
+        </form>
+        <div id="submissionMessage" class="form-message"></div>
+      </div>
+    </section>
   </main>
 
   <script src="app.js"></script>
