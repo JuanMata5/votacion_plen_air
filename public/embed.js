@@ -2,9 +2,11 @@
   const scriptTag = document.currentScript || document.querySelector('script[src*="embed.js"]');
   const apiBase = scriptTag?.dataset.apiBase || window.ArtGalleryEmbedConfig?.apiBase || window.location.origin;
   const containerId = scriptTag?.dataset.container || window.ArtGalleryEmbedConfig?.container || 'art-gallery-embed';
-  const showSubmission = scriptTag?.dataset.showSubmission === 'true' || window.ArtGalleryEmbedConfig?.showSubmission;
+  const showSubmission = scriptTag?.dataset.showSubmission !== 'false' && window.ArtGalleryEmbedConfig?.showSubmission !== false;
   const visitorKey = 'art_gallery_embed_visitor_id';
   const emailKey = 'art_gallery_embed_email';
+  const submissionEmailKey = 'art_gallery_embed_submission_email';
+  const submissionVerifiedKey = 'art_gallery_embed_submission_verified';
 
   if (!apiBase) {
     console.error('ArtGalleryEmbed: apiBase no está definido. Usa data-api-base o ArtGalleryEmbedConfig.apiBase');
@@ -16,6 +18,8 @@
 
   let visitorId = localStorage.getItem(visitorKey);
   let verifiedEmail = localStorage.getItem(emailKey);
+  let submissionEmail = localStorage.getItem(submissionEmailKey);
+  let submissionVerified = localStorage.getItem(submissionVerifiedKey) === 'true';
   let verifiedCode = null;
 
   if (!visitorId) {
@@ -80,8 +84,9 @@
       .art-gallery-embed__header .eyebrow { margin: 0; color: #d6731a; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.18em; }
       .art-gallery-embed__header h2 { margin: 0; font-size: 1.6rem; }
       .art-gallery-embed__grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-      .art-gallery-embed__card { background: #fff; border-radius: 22px; overflow: hidden; box-shadow: 0 18px 35px rgba(214, 115, 26, 0.12); display: flex; flex-direction: column; }
-      .art-gallery-embed__card img { width: 100%; height: 190px; object-fit: cover; }
+      .art-gallery-embed__card { background: #fff; border-radius: 22px; overflow: hidden; box-shadow: 0 18px 35px rgba(214, 115, 26, 0.12); display: flex; flex-direction: column; transition: transform 0.25s ease, box-shadow 0.25s ease; }
+      .art-gallery-embed__card:hover { transform: translateY(-2px); box-shadow: 0 22px 45px rgba(214, 115, 26, 0.18); }
+      .art-gallery-embed__card img { width: 100%; height: 230px; object-fit: cover; object-position: center center; display: block; }
       .art-gallery-embed__body { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
       .art-gallery-embed__badge { display: inline-flex; align-items: center; justify-content: center; padding: 0.35rem 0.75rem; border-radius: 999px; background: #f9b26b; color: #ffffff; font-size: 0.8rem; font-weight: 700; }
       .art-gallery-embed__body h3 { margin: 0; font-size: 1.05rem; line-height: 1.3; }
@@ -95,7 +100,17 @@
       .art-gallery-embed__email-row { display: grid; grid-template-columns: 1fr auto; gap: 0.75rem; }
       .art-gallery-embed__email-row input { width: 100%; padding: 0.85rem 1rem; border: 1px solid #d8c4b5; border-radius: 18px; font-size: 0.95rem; }
       .art-gallery-embed__email-note { margin: 0.75rem 0 0; color: #7b5a3b; font-size: 0.88rem; }
-      @media (max-width: 540px) { .art-gallery-embed__grid { grid-template-columns: 1fr; } .art-gallery-embed__email-row { grid-template-columns: 1fr; } }
+      .art-gallery-embed__submission-section { margin-top: 1.25rem; padding: 1rem; border-radius: 20px; background: #fff7ed; border: 1px solid #f3d1b0; }
+      .art-gallery-embed__submission-section h3 { margin: 0 0 0.75rem; font-size: 1.1rem; }
+      .hidden { display: none; }
+      .art-gallery-embed__submission-row { display: grid; gap: 0.75rem; }
+      .art-gallery-embed__submission-row input,
+      .art-gallery-embed__submission-row textarea { width: 100%; padding: 0.85rem 1rem; border: 1px solid #d8c4b5; border-radius: 18px; font-size: 0.95rem; }
+      .art-gallery-embed__submission-row textarea { resize: vertical; min-height: 110px; }
+      .art-gallery-embed__submission-buttons { display: grid; gap: 0.75rem; grid-template-columns: 1fr auto; margin-top: 0.75rem; }
+      .art-gallery-embed__submission-buttons button { width: 100%; }
+      .art-gallery-embed__submission-message { color: #7b5a3b; font-size: 0.9rem; margin-top: 0.5rem; }
+      @media (max-width: 540px) { .art-gallery-embed__grid { grid-template-columns: 1fr; } .art-gallery-embed__email-row, .art-gallery-embed__submission-buttons { grid-template-columns: 1fr; } }
     `;
     document.head.appendChild(style);
   }
@@ -141,6 +156,29 @@
     `;
   }
 
+  function renderSubmissionSection() {
+    return `
+      <div class="art-gallery-embed__submission-section">
+        <h3>Enviar obra</h3>
+        <div class="art-gallery-embed__submission-row">
+          <input id="art-gallery-embed-submission-email" type="email" placeholder="Tu correo" value="${submissionEmail || ''}" />
+          <div class="art-gallery-embed__submission-buttons">
+            <button id="art-gallery-embed-request-code" class="art-gallery-embed__button">Solicitar código</button>
+          </div>
+          <input id="art-gallery-embed-submission-code" type="text" placeholder="Código de verificación" class="hidden" />
+          <button id="art-gallery-embed-verify-code" class="art-gallery-embed__button hidden">Verificar código</button>
+          <input id="art-gallery-embed-submission-title" type="text" placeholder="Título de la obra" />
+          <input id="art-gallery-embed-submission-author" type="text" placeholder="Autor / grupo" />
+          <input id="art-gallery-embed-submission-category" type="text" placeholder="Categoría" />
+          <textarea id="art-gallery-embed-submission-description" placeholder="Descripción de la obra"></textarea>
+          <input id="art-gallery-embed-submission-image" type="file" accept="image/*" />
+          <button id="art-gallery-embed-submit-artwork" class="art-gallery-embed__button" disabled>Enviar obra</button>
+          <p id="art-gallery-embed-submission-message" class="art-gallery-embed__submission-message"></p>
+        </div>
+      </div>
+    `;
+  }
+
   function escapeHtml(text) {
     if (!text) return '';
     return text.replace(/[&<>"']/g, (tag) => {
@@ -159,6 +197,7 @@
         </div>
       </div>
       ${renderEmailSection()}
+      ${showSubmission ? renderSubmissionSection() : ''}
       <div class="art-gallery-embed__grid">
         ${artworks.length ? artworks.map(renderCard).join('') : '<p class="art-gallery-embed__empty">No hay obras disponibles.</p>'}
       </div>
@@ -177,6 +216,143 @@
         localStorage.setItem(emailKey, email);
         await render();
       });
+    }
+
+    if (showSubmission) {
+      const submissionEmailInput = root.querySelector('#art-gallery-embed-submission-email');
+      const requestCodeButton = root.querySelector('#art-gallery-embed-request-code');
+      const submissionCodeInput = root.querySelector('#art-gallery-embed-submission-code');
+      const verifyCodeButton = root.querySelector('#art-gallery-embed-verify-code');
+      const titleInput = root.querySelector('#art-gallery-embed-submission-title');
+      const authorInput = root.querySelector('#art-gallery-embed-submission-author');
+      const categoryInput = root.querySelector('#art-gallery-embed-submission-category');
+      const descriptionInput = root.querySelector('#art-gallery-embed-submission-description');
+      const imageInput = root.querySelector('#art-gallery-embed-submission-image');
+      const submitArtworkButton = root.querySelector('#art-gallery-embed-submit-artwork');
+      const submissionMessage = root.querySelector('#art-gallery-embed-submission-message');
+
+      const setSubmissionStatus = (message, error = false) => {
+        if (submissionMessage) {
+          submissionMessage.textContent = message;
+          submissionMessage.style.color = error ? '#a33' : '#3b2a20';
+        }
+      };
+
+      if (submissionEmailInput) {
+        submissionEmailInput.value = submissionEmail || '';
+      }
+
+      if (requestCodeButton && submissionEmailInput) {
+        requestCodeButton.addEventListener('click', async () => {
+          const email = submissionEmailInput.value.trim();
+          if (!email) {
+            setSubmissionStatus('Ingresa un correo válido para subir.', true);
+            return;
+          }
+          try {
+            const res = await fetch(`${apiBase}/api/submissions/request-code`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email }),
+            });
+            const body = await res.json();
+            if (!res.ok) throw new Error(body.error || 'No se pudo solicitar código.');
+            submissionEmail = email;
+            localStorage.setItem(submissionEmailKey, email);
+            if (submissionCodeInput) submissionCodeInput.classList.remove('hidden');
+            if (verifyCodeButton) verifyCodeButton.classList.remove('hidden');
+            setSubmissionStatus(body.message || 'Código enviado.');
+            if (body.code && submissionCodeInput) {
+              submissionCodeInput.value = body.code;
+            }
+          } catch (error) {
+            setSubmissionStatus(error.message, true);
+          }
+        });
+      }
+
+      if (verifyCodeButton && submissionCodeInput) {
+        verifyCodeButton.addEventListener('click', async () => {
+          const code = submissionCodeInput.value.trim();
+          const email = submissionEmail;
+          if (!email || !code) {
+            setSubmissionStatus('Completa correo y código.', true);
+            return;
+          }
+          try {
+            const res = await fetch(`${apiBase}/api/submissions/verify-code`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, code }),
+            });
+            const body = await res.json();
+            if (!res.ok) throw new Error(body.error || 'No se pudo verificar el código.');
+            submissionVerified = true;
+            localStorage.setItem(submissionVerifiedKey, 'true');
+            setSubmissionStatus(body.message || 'Correo verificado.');
+            if (submitArtworkButton) submitArtworkButton.disabled = false;
+          } catch (error) {
+            setSubmissionStatus(error.message, true);
+          }
+        });
+      }
+
+      if (submitArtworkButton) {
+        submitArtworkButton.addEventListener('click', async () => {
+          const title = titleInput?.value.trim();
+          const author = authorInput?.value.trim();
+          const category = categoryInput?.value.trim();
+          const description = descriptionInput?.value.trim();
+          const file = imageInput?.files?.[0];
+          const email = submissionEmail;
+          const code = submissionCodeInput?.value.trim();
+
+          if (!submissionVerified) {
+            setSubmissionStatus('Verifica tu correo antes de subir.', true);
+            return;
+          }
+          if (!title || !author || !category || !description || !file) {
+            setSubmissionStatus('Completa todos los campos de la obra.', true);
+            return;
+          }
+
+          try {
+            const form = new FormData();
+            form.append('title', title);
+            form.append('description', description);
+            form.append('category', category);
+            form.append('author', author);
+            form.append('email', email);
+            form.append('code', code);
+            form.append('image', file);
+            submitArtworkButton.disabled = true;
+            submitArtworkButton.textContent = 'Enviando...';
+
+            const res = await fetch(`${apiBase}/api/submissions/upload`, {
+              method: 'POST',
+              body: form,
+            });
+            const body = await res.json();
+            if (!res.ok) throw new Error(body.error || 'Error al enviar la obra.');
+            setSubmissionStatus(body.message || 'Obra enviada para revisión.');
+            if (titleInput) titleInput.value = '';
+            if (authorInput) authorInput.value = '';
+            if (categoryInput) categoryInput.value = '';
+            if (descriptionInput) descriptionInput.value = '';
+            if (imageInput) imageInput.value = '';
+            submissionVerified = false;
+            localStorage.removeItem(submissionVerifiedKey);
+            submitArtworkButton.textContent = 'Enviar obra';
+            submitArtworkButton.disabled = true;
+          } catch (error) {
+            setSubmissionStatus(error.message, true);
+            if (submitArtworkButton) {
+              submitArtworkButton.disabled = false;
+              submitArtworkButton.textContent = 'Enviar obra';
+            }
+          }
+        });
+      }
     }
 
     root.querySelectorAll('.art-gallery-embed__button').forEach((button) => {
