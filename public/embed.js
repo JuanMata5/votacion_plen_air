@@ -168,6 +168,7 @@
     return `
       <div class="art-gallery-embed__submission-section">
         <h3>Enviar obra</h3>
+        <p>Envía tu obra para participar en la galería. Solo las obras aprobadas por el equipo aparecerán en la votación, así garantizamos calidad y orden.</p>
         <div class="art-gallery-embed__submission-row">
           <input id="art-gallery-embed-submission-email" type="email" placeholder="Tu correo" value="${submissionEmail || ''}" />
           <div class="art-gallery-embed__submission-buttons">
