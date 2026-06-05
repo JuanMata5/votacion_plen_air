@@ -86,7 +86,7 @@
       .art-gallery-embed__grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
       .art-gallery-embed__card { background: #fff; border-radius: 22px; overflow: hidden; box-shadow: 0 18px 35px rgba(214, 115, 26, 0.12); display: flex; flex-direction: column; transition: transform 0.25s ease, box-shadow 0.25s ease; }
       .art-gallery-embed__card:hover { transform: translateY(-2px); box-shadow: 0 22px 45px rgba(214, 115, 26, 0.18); }
-      .art-gallery-embed__card img { width: 100%; height: 230px; object-fit: cover; object-position: center center; display: block; }
+      .art-gallery-embed__card img { width: 100%; height: 320px; object-fit: cover; object-position: center center; display: block; cursor: zoom-in; }
       .art-gallery-embed__body { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
       .art-gallery-embed__badge { display: inline-flex; align-items: center; justify-content: center; padding: 0.35rem 0.75rem; border-radius: 999px; background: #f9b26b; color: #ffffff; font-size: 0.8rem; font-weight: 700; }
       .art-gallery-embed__body h3 { margin: 0; font-size: 1.05rem; line-height: 1.3; }
@@ -110,6 +110,14 @@
       .art-gallery-embed__submission-buttons { display: grid; gap: 0.75rem; grid-template-columns: 1fr auto; margin-top: 0.75rem; }
       .art-gallery-embed__submission-buttons button { width: 100%; }
       .art-gallery-embed__submission-message { color: #7b5a3b; font-size: 0.9rem; margin-top: 0.5rem; }
+      .art-gallery-embed__lightbox { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; padding: 1.5rem; backdrop-filter: blur(8px); background: rgba(15, 12, 9, 0.55); }
+      .art-gallery-embed__lightbox.active { display: flex; }
+      .art-gallery-embed__lightbox-panel { width: min(100%, 960px); max-height: 90vh; background: #fff; border-radius: 22px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.25); display: grid; grid-template-rows: auto 1fr auto; }
+      .art-gallery-embed__lightbox-panel img { width: 100%; max-height: 72vh; object-fit: contain; background: #000; }
+      .art-gallery-embed__lightbox-caption { padding: 1rem 1.25rem; color: #3b2a20; }
+      .art-gallery-embed__lightbox-footer { padding: 1rem 1.25rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
+      .art-gallery-embed__lightbox-close { background: #e87916; }
+      @media (max-width: 720px) { .art-gallery-embed__lightbox-panel { width: 100%; } .art-gallery-embed__lightbox-footer { justify-content: center; } }
       @media (max-width: 540px) { .art-gallery-embed__grid { grid-template-columns: 1fr; } .art-gallery-embed__email-row, .art-gallery-embed__submission-buttons { grid-template-columns: 1fr; } }
     `;
     document.head.appendChild(style);
@@ -200,6 +208,15 @@
       ${showSubmission ? renderSubmissionSection() : ''}
       <div class="art-gallery-embed__grid">
         ${artworks.length ? artworks.map(renderCard).join('') : '<p class="art-gallery-embed__empty">No hay obras disponibles.</p>'}
+      </div>
+      <div id="art-gallery-embed-lightbox" class="art-gallery-embed__lightbox">
+        <div class="art-gallery-embed__lightbox-panel">
+          <img id="art-gallery-embed-lightbox-image" src="" alt="" />
+          <div class="art-gallery-embed__lightbox-caption"><p id="art-gallery-embed-lightbox-title"></p></div>
+          <div class="art-gallery-embed__lightbox-footer">
+            <button id="art-gallery-embed-lightbox-close" class="art-gallery-embed__button art-gallery-embed__lightbox-close">Cerrar</button>
+          </div>
+        </div>
       </div>
     `;
 
@@ -360,6 +377,33 @@
       if (!artworkId) return;
       button.addEventListener('click', () => voteArtwork(artworkId, button));
     });
+
+    const lightbox = root.querySelector('#art-gallery-embed-lightbox');
+    const lightboxImage = root.querySelector('#art-gallery-embed-lightbox-image');
+    const lightboxTitle = root.querySelector('#art-gallery-embed-lightbox-title');
+    const lightboxClose = root.querySelector('#art-gallery-embed-lightbox-close');
+    const cards = root.querySelectorAll('.art-gallery-embed__card img');
+
+    cards.forEach((img) => {
+      img.addEventListener('click', () => {
+        if (!lightbox || !lightboxImage || !lightboxTitle) return;
+        lightboxImage.src = img.src;
+        lightboxImage.alt = img.alt;
+        lightboxTitle.textContent = img.alt || 'Obra';
+        lightbox.classList.add('active');
+      });
+    });
+
+    if (lightboxClose) {
+      lightboxClose.addEventListener('click', () => {
+        lightbox?.classList.remove('active');
+      });
+    }
+    if (lightbox) {
+      lightbox.addEventListener('click', (event) => {
+        if (event.target === lightbox) lightbox.classList.remove('active');
+      });
+    }
   }
 
   async function start() {
