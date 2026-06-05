@@ -102,6 +102,10 @@
       .art-gallery-embed__email-note { margin: 0.75rem 0 0; color: #7b5a3b; font-size: 0.88rem; }
       .art-gallery-embed__submission-section { margin-top: 1.25rem; padding: 1rem; border-radius: 20px; background: #fff7ed; border: 1px solid #f3d1b0; }
       .art-gallery-embed__submission-section h3 { margin: 0 0 0.75rem; font-size: 1.1rem; }
+      .art-gallery-embed__submission-section p { margin: 0 0 0.75rem; font-size: 0.95rem; color: #6e5947; }
+      .art-gallery-embed__announcement { padding: 1rem; border-radius: 20px; background: #fef3e2; border: 2px solid #e87916; text-align: center; margin-bottom: 1.5rem; }
+      .art-gallery-embed__announcement h3 { margin: 0 0 0.5rem; font-size: 1.2rem; color: #d6731a; }
+      .art-gallery-embed__announcement p { margin: 0; font-size: 0.95rem; color: #3b2a20; }
       .hidden { display: none; }
       .art-gallery-embed__submission-row { display: grid; gap: 0.75rem; }
       .art-gallery-embed__submission-row input,
@@ -151,9 +155,18 @@
     `;
   }
 
+  function renderAnnouncement() {
+    return `
+      <div class="art-gallery-embed__announcement">
+        <h3>📅 Votación próximamente</h3>
+        <p>Primero recopilamos las obras. La votación comienza en breve. ¡Envía tu obra ahora!</p>
+      </div>
+    `;
+  }
+
   function renderEmailSection() {
     return `
-      <div class="art-gallery-embed__email-section">
+      <div class="art-gallery-embed__email-section hidden">
         <p class="art-gallery-embed__email-label">Ingresa tu correo para poder votar</p>
         <div class="art-gallery-embed__email-row">
           <input id="art-gallery-embed-email" type="email" placeholder="tu@email.com" value="${verifiedEmail || ''}" />
@@ -202,12 +215,13 @@
       <div class="art-gallery-embed__header">
         <div>
           <p class="eyebrow">Galería de Arte</p>
-          <h2>Vota por tu obra favorita</h2>
+          <h2>Envía tu obra</h2>
         </div>
       </div>
+      ${renderAnnouncement()}
       ${renderEmailSection()}
       ${showSubmission ? renderSubmissionSection() : ''}
-      <div class="art-gallery-embed__grid">
+      <div class="art-gallery-embed__grid hidden">
         ${artworks.length ? artworks.map(renderCard).join('') : '<p class="art-gallery-embed__empty">No hay obras disponibles.</p>'}
       </div>
       <div id="art-gallery-embed-lightbox" class="art-gallery-embed__lightbox">
