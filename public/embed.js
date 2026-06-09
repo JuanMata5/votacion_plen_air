@@ -145,11 +145,7 @@
           <p>${escapeHtml(artwork.description)}</p>
           <div class="art-gallery-embed__meta">
             <span>${escapeHtml(artwork.author)}</span>
-            <span>${artwork.votes} votos</span>
           </div>
-          <button class="art-gallery-embed__button" data-id="${artwork.id}" ${artwork.voted || !verifiedEmail ? 'disabled' : ''}>
-            ${artwork.voted ? 'Ya votaste' : verifiedEmail ? 'Votar ahora' : 'Guarda tu correo'}
-          </button>
         </div>
       </article>
     `;
@@ -221,7 +217,7 @@
       ${renderAnnouncement()}
       ${renderEmailSection()}
       ${showSubmission ? renderSubmissionSection() : ''}
-      <div class="art-gallery-embed__grid hidden">
+      <div class="art-gallery-embed__grid">
         ${artworks.length ? artworks.map(renderCard).join('') : '<p class="art-gallery-embed__empty">No hay obras disponibles.</p>'}
       </div>
       <div id="art-gallery-embed-lightbox" class="art-gallery-embed__lightbox">
